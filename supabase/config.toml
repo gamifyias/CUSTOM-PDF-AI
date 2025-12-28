@@ -1,0 +1,13 @@
+project_id = "tpjnyemwllwgsywpuyzx"
+
+[functions.upsc-mentor]
+verify_jwt = false
+
+[functions.evaluate-answer]
+verify_jwt = false
+
+[functions.generate-mcqs]
+verify_jwt = false
+
+[functions.admin-auth]
+verify_jwt = false
