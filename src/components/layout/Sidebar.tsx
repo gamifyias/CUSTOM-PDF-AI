@@ -149,7 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                     <div className="w-1.5 h-1.5 rounded-full bg-sidebar-primary-foreground animate-pulse" />
                   )}
                 </button>
-              );
+              );  
             })}
           </div>
         </div>

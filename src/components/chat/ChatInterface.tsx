@@ -384,8 +384,9 @@ export const ChatInterface: React.FC = () => {
         </form>
         <p className="text-xs text-muted-foreground mt-2 text-center">
           Mode: <span className="font-medium text-foreground capitalize">{currentStudyMode.replace('-', ' ')}</span>
-          {uploadedPDF && <span className="ml-2">• Source: {uploadedPDF.name}</span>}
+          {uploadedPDF && <span className="ml-2">• Source: {uploadedPDF.name}</span>}   <a href="/admin">Admin ??</a>
         </p>
+
       </div>
     </div>
   );
