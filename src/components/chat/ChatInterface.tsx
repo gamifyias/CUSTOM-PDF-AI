@@ -18,7 +18,14 @@ import {
   Loader2,
   Bot,
   User,
+  Settings,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import Admin from '@/pages/Admin';
 
 const mentorActions: MentorAction[] = [
   { id: 'expand', label: 'Expand', icon: 'Expand', action: 'expand' },
@@ -48,12 +55,12 @@ const getActionIcon = (iconName: string) => {
 const highlightTrapWords = (text: string) => {
   const trapWords = ['only', 'always', 'never', 'all', 'completely', 'exclusively', 'none', 'every'];
   let highlighted = text;
-  
+
   trapWords.forEach(word => {
     const regex = new RegExp(`\\b(${word})\\b`, 'gi');
     highlighted = highlighted.replace(regex, `<span class="trap-word">$1</span>`);
   });
-  
+
   return highlighted;
 };
 
@@ -71,6 +78,7 @@ export const ChatInterface: React.FC = () => {
   const { messages, addMessage, uploadedPDF, currentStudyMode, addXP, pdfContent, pdfImages } = useApp();
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -84,9 +92,9 @@ export const ChatInterface: React.FC = () => {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    
+
     if (!input.trim()) return;
-    
+
     if (!uploadedPDF) {
       addMessage({
         id: crypto.randomUUID(),
@@ -117,7 +125,7 @@ export const ChatInterface: React.FC = () => {
       content: input.trim(),
       timestamp: new Date(),
     };
-    
+
     addMessage(userMessage);
     const userQuery = input.trim();
     setInput('');
@@ -144,7 +152,7 @@ export const ChatInterface: React.FC = () => {
           metadata: response.metadata,
           actions: mentorActions,
         };
-        
+
         addMessage(mentorMessage);
         addXP(10);
       } else {
@@ -192,7 +200,7 @@ export const ChatInterface: React.FC = () => {
           metadata: response.metadata,
           actions: mentorActions,
         };
-        
+
         addMessage(actionMessage);
         addXP(5);
       } else {
@@ -232,7 +240,7 @@ export const ChatInterface: React.FC = () => {
             </div>
             <h3 className="font-display text-xl font-semibold mb-2">Your UPSC Mentor</h3>
             <p className="text-muted-foreground max-w-md mx-auto">
-              {uploadedPDF 
+              {uploadedPDF
                 ? `Ready to study from "${uploadedPDF.name}". Ask me anything about your preparation.`
                 : "Upload your study material to begin. I'll use it as the primary source for all answers."}
             </p>
@@ -268,8 +276,8 @@ export const ChatInterface: React.FC = () => {
               <div className="flex items-start gap-3 mb-2">
                 <div className={cn(
                   "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-                  message.role === 'mentor' 
-                    ? "bg-gradient-to-br from-gold to-gold-dark" 
+                  message.role === 'mentor'
+                    ? "bg-gradient-to-br from-gold to-gold-dark"
                     : "bg-primary-foreground/20"
                 )}>
                   {message.role === 'mentor' ? (
@@ -286,10 +294,10 @@ export const ChatInterface: React.FC = () => {
               </div>
 
               {/* Content */}
-              <div 
+              <div
                 className="prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ 
-                  __html: highlightTrapWords(formatContent(message.content)) 
+                dangerouslySetInnerHTML={{
+                  __html: highlightTrapWords(formatContent(message.content))
                 }}
               />
 
@@ -372,8 +380,8 @@ export const ChatInterface: React.FC = () => {
               className="w-full px-4 py-3 bg-background border border-input rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50"
             />
           </div>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             variant="gold"
             size="icon"
             disabled={!input.trim() || isLoading}
@@ -382,11 +390,34 @@ export const ChatInterface: React.FC = () => {
             <Send className="h-5 w-5" />
           </Button>
         </form>
-        <p className="text-xs text-muted-foreground mt-2 text-center">
-          Mode: <span className="font-medium text-foreground capitalize">{currentStudyMode.replace('-', ' ')}</span>
-          {uploadedPDF && <span className="ml-2">• Source: {uploadedPDF.name}</span>}   <a href="/admin">Admin ??</a>
-        </p>
+        <div className="flex flex-col items-center gap-2 mt-2">
+          <p className="text-xs text-muted-foreground text-center">
+            Mode: <span className="font-medium text-foreground capitalize">{currentStudyMode.replace('-', ' ')}</span>
+            {uploadedPDF && <span className="ml-2">• Source: {uploadedPDF.name}</span>}
+          </p>
 
+          <Dialog open={showAdmin} onOpenChange={setShowAdmin}>
+            <DialogTrigger asChild>
+              <button className="text-[10px] text-muted-foreground hover:text-accent transition-colors flex items-center gap-1">
+                <Settings className="w-3 h-3" />
+                Admin ?
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 overflow-hidden border-none bg-transparent shadow-2xl">
+              <div className="w-full h-full bg-background rounded-xl shadow-2xl overflow-auto relative glass-effect border border-border">
+                <div className="absolute top-4 right-12 z-50">
+                  <button
+                    onClick={() => setShowAdmin(false)}
+                    className="p-2 rounded-full bg-muted/50 hover:bg-muted transition-colors"
+                  >
+                    <Minimize2 className="w-4 h-4" />
+                  </button>
+                </div>
+                <Admin onHide={() => setShowAdmin(false)} />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     </div>
   );

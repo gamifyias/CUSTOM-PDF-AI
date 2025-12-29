@@ -6,14 +6,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { adminApi, Book, BookPDF } from '@/lib/api/admin';
 import { cn } from '@/lib/utils';
-import { 
-  LogOut, Plus, Trash2, Edit2, Upload, BookOpen, Settings, 
+import {
+  LogOut, Plus, Trash2, Edit2, Upload, BookOpen, Settings,
   Save, X, Loader2, ImageIcon, FileText
 } from 'lucide-react';
 
 type Tab = 'books' | 'settings';
 
-export default function Admin() {
+export default function Admin({ onHide }: { onHide?: () => void }) {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -293,8 +293,8 @@ export default function Admin() {
             </form>
 
             <div className="mt-4 text-center">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-                ← Back to Home
+              <Button variant="ghost" size="sm" onClick={() => onHide ? onHide() : navigate('/')}>
+                ← {onHide ? 'Close' : 'Back to Home'}
               </Button>
             </div>
           </div>
@@ -313,8 +313,8 @@ export default function Admin() {
           <h1 className="font-display text-xl font-bold">GAMIFY IAS Admin</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-            View Site
+          <Button variant="ghost" size="sm" onClick={() => onHide ? onHide() : navigate('/')}>
+            {onHide ? 'Close' : 'View Site'}
           </Button>
           <Button variant="outline" size="sm" onClick={handleLogout}>
             <LogOut className="w-4 h-4" />
@@ -520,10 +520,10 @@ export default function Admin() {
                             PDF Files ({book.pdfs?.length || 0})
                           </h5>
                           <label className="cursor-pointer">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              asChild 
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
                               disabled={uploadingPdfBookId === book.id}
                             >
                               <span>
