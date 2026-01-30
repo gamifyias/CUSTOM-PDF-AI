@@ -7,7 +7,6 @@ import { ChatInterface } from '@/components/chat/ChatInterface';
 import { AnswerPractice } from '@/components/practice/AnswerPractice';
 import { MockTest } from '@/components/test/MockTest';
 import { StudyNotes } from '@/components/notes/StudyNotes';
-import { BooksSection } from '@/components/books/BooksSection';
 import { WelcomeScreen } from '@/components/welcome/WelcomeScreen';
 import { cn } from '@/lib/utils';
 
@@ -47,9 +46,6 @@ const MainContent: React.FC = () => {
           <div className="h-full flex flex-col overflow-y-auto">
             {!uploadedPDF && (
               <div className="p-4 md:p-6 space-y-6">
-                <div className="animate-slide-in-bottom" style={{ animationDelay: '0.1s' }}>
-                  <BooksSection />
-                </div>
                 <div className="animate-slide-in-bottom" style={{ animationDelay: '0.2s' }}>
                   <PDFUpload />
                 </div>

@@ -22,25 +22,41 @@ export const PDFUpload: React.FC = () => {
   }, []);
 
   const cleanExtractedText = (raw: string) => {
-    // Normalize whitespace and remove common PDF extraction artifacts.
-    const lines = raw
+    return raw
       .replace(/\u0000/g, '')
+      .replace(/[^\x20-\x7E\n\r\t]/g, ' ') // Remove non-printable chars but keep basic formatting
       .replace(/\s+/g, ' ')
-      .split(/\n+/)
-      .map(l => l.trim())
-      .filter(Boolean)
-      .filter(l => {
-        const lower = l.toLowerCase();
-        // Drop typical non-content noise
-        if (lower.startsWith('page ') && /^page\s+\d+\s*(of\s+\d+)?$/.test(lower)) return false;
-        if (lower.includes('http://') || lower.includes('https://')) return true; // keep references if present
-        if (lower.includes('doi:')) return true;
-        // Very short lines are often headers/footers; keep if they look meaningful
-        if (l.length <= 2) return false;
-        return true;
-      });
+      .replace(/\n\s*\n/g, '\n\n')
+      .trim();
+  };
 
-    return lines.join('\n').trim();
+  const extractImagesFromPDF = async (file: File, maxPages = 5): Promise<string[]> => {
+    GlobalWorkerOptions.workerSrc = pdfjsWorkerSrc;
+    const arrayBuffer = await file.arrayBuffer();
+    const loadingTask = getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+
+    const pagesToRender = Math.min(pdf.numPages, maxPages);
+    const images: string[] = [];
+
+    for (let i = 1; i <= pagesToRender; i++) {
+      try {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        if (!context) continue;
+
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        await page.render({ canvasContext: context, viewport }).promise;
+        images.push(canvas.toDataURL('image/jpeg', 0.8));
+      } catch (err) {
+        console.error(`Error rendering page ${i}:`, err);
+      }
+    }
+    return images;
   };
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
@@ -50,7 +66,7 @@ export const PDFUpload: React.FC = () => {
     const loadingTask = getDocument({ data: arrayBuffer });
     const pdf = await loadingTask.promise;
 
-    const maxPages = Math.min(pdf.numPages, 50);
+    const maxPages = Math.min(pdf.numPages, 100); // Increased limit
     let out = '';
 
     for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
@@ -61,20 +77,14 @@ export const PDFUpload: React.FC = () => {
         .map((item) => (typeof item?.str === 'string' ? item.str : ''))
         .join(' ');
 
-      out += pageText + '\n';
+      out += `--- Page ${pageNum} ---\n${pageText}\n\n`;
 
-      // Hard cap to avoid sending huge prompts
-      if (out.length > 80000) break;
+      if (out.length > 120000) break; // Increased cap
     }
 
-    const cleaned = cleanExtractedText(out);
-
-    if (cleaned.length < 300) {
-      return `Study Material: ${file.name}\n\nI can’t reliably extract readable text from this PDF (it may be scanned/images). Please upload a text-based PDF for best results.`;
-    }
-
-    return cleaned.substring(0, 50000);
+    return cleanExtractedText(out);
   };
+
   const processFile = useCallback(async (file: File) => {
     if (file.type !== 'application/pdf') {
       alert('Please upload a PDF file');
@@ -84,33 +94,36 @@ export const PDFUpload: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      // Extract text content from PDF
-      const content = await extractTextFromPDF(file);
-      
+      // Extract text content and images
+      const [content, images] = await Promise.all([
+        extractTextFromPDF(file),
+        extractImagesFromPDF(file, 5)
+      ]);
+
       const pdfDoc: PDFDocument = {
         id: crypto.randomUUID(),
         name: file.name,
         size: file.size,
         uploadedAt: new Date(),
-        pageCount: Math.max(1, Math.floor(file.size / 3000)), // Estimate pages
+        pageCount: images.length > 0 ? Math.max(images.length, 1) : 1, // Fallback if meta fails
       };
-      
+
       setUploadedPDF(pdfDoc);
       setPdfContent(content);
-      setPdfImages([]);
-      clearMessages(); // Clear previous chat when new PDF is uploaded
+      setPdfImages(images);
+      clearMessages();
     } catch (error) {
       console.error('Error processing PDF:', error);
       alert('Failed to process PDF. Please try again.');
     } finally {
       setIsProcessing(false);
     }
-  }, [setUploadedPDF, setPdfContent, clearMessages]);
+  }, [setUploadedPDF, setPdfContent, setPdfImages, clearMessages]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const file = e.dataTransfer.files[0];
     if (file) {
       processFile(file);
@@ -197,7 +210,7 @@ export const PDFUpload: React.FC = () => {
             )} />
           )}
         </div>
-        
+
         <div className="text-center">
           {isProcessing ? (
             <>
@@ -231,7 +244,7 @@ export const PDFUpload: React.FC = () => {
       <div className="mt-4 p-3 rounded-lg bg-warning/10 border border-warning/20 flex items-start gap-3 animate-fade-in">
         <AlertCircle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5 animate-pulse" />
         <p className="text-xs text-warning">
-          <span className="font-semibold">Important:</span> The AI mentor will use this PDF as the authoritative source. 
+          <span className="font-semibold">Important:</span> The AI mentor will use this PDF as the authoritative source.
           Upload your main study material to begin your UPSC preparation.
         </p>
       </div>

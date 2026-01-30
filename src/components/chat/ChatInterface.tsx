@@ -18,14 +18,11 @@ import {
   Loader2,
   Bot,
   User,
-  Settings,
 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import Admin from '@/pages/Admin';
 
 const mentorActions: MentorAction[] = [
   { id: 'expand', label: 'Expand', icon: 'Expand', action: 'expand' },
@@ -78,7 +75,6 @@ export const ChatInterface: React.FC = () => {
   const { messages, addMessage, uploadedPDF, currentStudyMode, addXP, pdfContent, pdfImages } = useApp();
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -105,7 +101,7 @@ export const ChatInterface: React.FC = () => {
       return;
     }
 
-    const hasText = !!pdfContent && pdfContent.trim().length >= 200;
+    const hasText = !!pdfContent && pdfContent.trim().length > 100;
     const hasImages = Array.isArray(pdfImages) && pdfImages.length > 0;
 
     if (!hasText && !hasImages) {
@@ -113,7 +109,7 @@ export const ChatInterface: React.FC = () => {
         id: crypto.randomUUID(),
         role: 'mentor',
         content:
-          '⚠️ **PDF content not loaded properly.**\n\nI couldn’t extract readable text or page images from this PDF. Please try:\n1. Re-uploading the PDF\n2. Using a different PDF\n3. Selecting another book from the library',
+          '⚠️ **PDF content not loaded properly.**\n\nI couldn’t extract readable text or page images from this PDF. Please try:\n1. Re-uploading the PDF\n2. Using a different PDF (non-scanned or higher quality)\n3. Ensuring the PDF is not password protected',
         timestamp: new Date(),
       });
       return;
@@ -396,27 +392,6 @@ export const ChatInterface: React.FC = () => {
             {uploadedPDF && <span className="ml-2">• Source: {uploadedPDF.name}</span>}
           </p>
 
-          <Dialog open={showAdmin} onOpenChange={setShowAdmin}>
-            <DialogTrigger asChild>
-              <button className="text-[10px] text-muted-foreground hover:text-accent transition-colors flex items-center gap-1">
-                <Settings className="w-3 h-3" />
-                Admin ?
-              </button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[95vw] w-[1200px] h-[90vh] p-0 overflow-hidden border-none bg-transparent shadow-2xl">
-              <div className="w-full h-full bg-background rounded-xl shadow-2xl overflow-auto relative glass-effect border border-border">
-                <div className="absolute top-4 right-12 z-50">
-                  <button
-                    onClick={() => setShowAdmin(false)}
-                    className="p-2 rounded-full bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <Minimize2 className="w-4 h-4" />
-                  </button>
-                </div>
-                <Admin onHide={() => setShowAdmin(false)} />
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
     </div>

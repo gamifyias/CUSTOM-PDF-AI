@@ -23,7 +23,7 @@ import {
 type TestState = 'idle' | 'generating' | 'running' | 'completed';
 
 export const MockTest: React.FC = () => {
-  const { uploadedPDF, pdfContent, addXP, incrementTestsCompleted, updateAccuracy } = useApp();
+  const { uploadedPDF, pdfContent, pdfImages, addXP, incrementTestsCompleted, updateAccuracy } = useApp();
   const [testState, setTestState] = useState<TestState>('idle');
   const [questions, setQuestions] = useState<MCQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -104,7 +104,8 @@ export const MockTest: React.FC = () => {
         pdfContent,
         uploadedPDF?.name || 'Study Material',
         numQuestions,
-        difficulty
+        difficulty,
+        pdfImages
       );
 
       if (response.success && response.questions && response.questions.length > 0) {
@@ -165,7 +166,7 @@ export const MockTest: React.FC = () => {
   const submitTest = () => {
     setTestState('completed');
     setShowResults(true);
-    
+
     const correct = questions.filter(q => answers[q.id] === q.correctAnswer).length;
     addXP(correct * 20);
     incrementTestsCompleted();
@@ -177,7 +178,7 @@ export const MockTest: React.FC = () => {
     const attempted = Object.keys(answers).filter(k => answers[k] !== null).length;
     const correct = questions.filter(q => answers[q.id] === q.correctAnswer).length;
     const accuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
-    
+
     return { total, attempted, correct, accuracy };
   };
 
@@ -210,7 +211,7 @@ export const MockTest: React.FC = () => {
 
           <div className="mentor-card mb-6 text-left">
             <h4 className="font-semibold mb-4">Test Configuration</h4>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Number of Questions</label>
@@ -221,8 +222,8 @@ export const MockTest: React.FC = () => {
                       onClick={() => setNumQuestions(n)}
                       className={cn(
                         "px-4 py-2 rounded-lg border transition-all",
-                        numQuestions === n 
-                          ? "border-accent bg-accent/10 text-accent-foreground font-medium" 
+                        numQuestions === n
+                          ? "border-accent bg-accent/10 text-accent-foreground font-medium"
                           : "border-border hover:border-accent/50"
                       )}
                     >
@@ -245,8 +246,8 @@ export const MockTest: React.FC = () => {
                       onClick={() => setDifficulty(d.value as any)}
                       className={cn(
                         "px-4 py-2 rounded-lg border transition-all",
-                        difficulty === d.value 
-                          ? "border-accent bg-accent/10 font-medium" 
+                        difficulty === d.value
+                          ? "border-accent bg-accent/10 font-medium"
                           : "border-border hover:border-accent/50",
                         difficulty === d.value && d.color
                       )}
@@ -313,7 +314,7 @@ export const MockTest: React.FC = () => {
   // Test Results
   if (showResults) {
     const results = calculateResults();
-    
+
     return (
       <div className="h-full overflow-y-auto p-4 md:p-6">
         <div className="max-w-3xl mx-auto py-8 animate-slide-up">
@@ -327,11 +328,11 @@ export const MockTest: React.FC = () => {
             </div>
             <p className="text-2xl font-display font-bold mb-1">Test Complete!</p>
             <p className="text-muted-foreground">
-              {results.accuracy >= 80 ? 'Excellent performance!' : 
-               results.accuracy >= 60 ? 'Good effort, keep practicing!' : 
-               'Review the explanations to improve.'}
+              {results.accuracy >= 80 ? 'Excellent performance!' :
+                results.accuracy >= 60 ? 'Good effort, keep practicing!' :
+                  'Review the explanations to improve.'}
             </p>
-            
+
             <div className="flex justify-center gap-8 mt-6">
               <div className="text-center">
                 <p className="text-2xl font-bold text-success">{results.correct}</p>
@@ -360,7 +361,7 @@ export const MockTest: React.FC = () => {
             {questions.map((q, index) => {
               const userAnswer = answers[q.id];
               const isCorrect = userAnswer === q.correctAnswer;
-              
+
               return (
                 <div key={q.id} className="mentor-card">
                   <div className="flex items-start gap-3 mb-3">
@@ -379,7 +380,7 @@ export const MockTest: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2 ml-11">
                     {q.options.map((option, optIndex) => (
                       <div
@@ -401,7 +402,7 @@ export const MockTest: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="mt-3 ml-11 p-3 rounded bg-muted/50 text-sm">
                     <p className="font-medium mb-1">Explanation:</p>
                     <p className="text-muted-foreground">{q.explanation}</p>
@@ -497,8 +498,8 @@ export const MockTest: React.FC = () => {
                   onClick={toggleFlag}
                   className={cn(
                     "p-2 rounded-lg transition-colors",
-                    flagged.has(currentQuestion.id) 
-                      ? "bg-warning/20 text-warning" 
+                    flagged.has(currentQuestion.id)
+                      ? "bg-warning/20 text-warning"
                       : "hover:bg-muted text-muted-foreground"
                   )}
                 >
@@ -542,7 +543,7 @@ export const MockTest: React.FC = () => {
           <ChevronLeft className="w-4 h-4" />
           Previous
         </Button>
-        
+
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>{Object.keys(answers).filter(k => answers[k] !== null).length} answered</span>
           <span>•</span>
