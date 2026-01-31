@@ -70,7 +70,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             </div>
           </div>
         ))}
-      </div>
+      </div>  
 
       {/* Main content */}
       <div className="relative z-10 text-center px-6">
@@ -113,7 +113,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           )}
         >
           <p className="text-lg md:text-xl text-gold font-medium tracking-widest uppercase animate-typewriter">
-            The Revolutionary UPSC AI
+            The Ultimate UPSC AI
           </p>
         </div>
 

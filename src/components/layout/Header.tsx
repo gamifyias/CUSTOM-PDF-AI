@@ -1,85 +1,89 @@
-import React from 'react';
-import { useApp } from '@/contexts/AppContext';
-import { Button } from '@/components/ui/button';
-import { 
-  Moon, 
-  Sun, 
-  Focus, 
-  Menu, 
-  Trophy,
-  Zap
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useApp } from "@/contexts/AppContext";
+import { useAuth } from "@/contexts/AuthContext";
+
+import {
+  Moon,
+  Sun,
+  Menu,
+  LogOut,
+} from "lucide-react";
 
 export const Header: React.FC = () => {
-  const { 
-    isDarkMode, 
-    toggleDarkMode, 
-    isFocusMode, 
-    toggleFocusMode,
+  const {
+    isDarkMode,
+    toggleDarkMode,
+    isFocusMode,
     toggleSidebar,
-    userProgress 
   } = useApp();
 
-  const xpForNextLevel = 500;
-  const currentLevelXP = userProgress.xp % xpForNextLevel;
+  const { signOut } = useAuth();
 
   return (
-    <header className={cn(
-      "h-16 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50 transition-all duration-300",
-      isFocusMode && "bg-background border-transparent"
-    )}>
+    <header
+      className={cn(
+        "sticky top-0 z-50 h-16",
+        "backdrop-blur-xl bg-gradient-to-r from-card/80 via-card/70 to-card/80",
+        "border-b border-white/5",
+        "transition-all duration-300",
+        isFocusMode && "bg-background border-transparent"
+      )}
+    >
       <div className="h-full px-4 flex items-center justify-between">
-        {/* Left Section */}
+
+        {/* LEFT */}
         <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={toggleSidebar}
-            className="no-print hover:bg-accent/10 transition-all duration-200"
+            className="hover:bg-white/5 transition-all duration-200"
           >
             <Menu className="h-5 w-5" />
           </Button>
-          
-          <div className="flex items-center gap-3 group">
-            <div className="hidden sm:block">
-              <h1 className="font-display text-xl font-bold tracking-tight text-foreground">
-                GAMIFY <span className="text-gradient-gold-animated">IAS</span>
-              </h1>
-              <p className="text-[10px] text-muted-foreground -mt-0.5 tracking-wider">The Revolutionary UPSC AI</p>
-            </div>
+
+          <div className="hidden sm:flex flex-col leading-tight">
+            <h1 className="text-lg font-bold tracking-tight text-foreground">
+              GAMIFY{" "}
+              <span className="bg-gradient-to-r from-yellow-400 to-gold bg-clip-text text-transparent animate-gradient">
+                IAS
+              </span>
+            </h1>
+            <span className="text-[10px] text-muted-foreground tracking-wider">
+              THE UPSC AI COMPANION
+            </span>
           </div>
         </div>
 
-        {/* Right Section */}
+        {/* RIGHT */}
         <div className="flex items-center gap-2">
-          {/* <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleFocusMode}
-            className={cn(
-              "transition-all duration-200 hover:scale-105",
-              isFocusMode && "bg-accent text-accent-foreground shadow-gold"
-            )}
-            title="Focus Mode"
-          >
-            <Focus className="h-5 w-5" />
-          </Button> */}
-
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleDarkMode}
-            className="transition-all duration-200 hover:scale-105 hover:rotate-12"
             title={isDarkMode ? "Light Mode" : "Dark Mode"}
+            className="transition-all duration-200 hover:scale-110"
           >
             {isDarkMode ? (
-              <Sun className="h-5 w-5 text-gold" />
+              <Sun className="h-5 w-5 text-yellow-400 hover:rotate-12 transition-transform" />
             ) : (
-              <Moon className="h-5 w-5" />
+              <Moon className="h-5 w-5 hover:-rotate-12 transition-transform" />
             )}
           </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={signOut}
+            title="Sign Out"
+            className="transition-all duration-200 hover:bg-red-500/10 hover:text-red-500 hover:scale-110"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
+
       </div>
     </header>
   );
